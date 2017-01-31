@@ -26,7 +26,36 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err){
 	console.log("Connected as id: " + connection.threadId);
+	//start();
 })
+
+var start = function(){
+	inquirer.prompt({
+		name: 'choice',
+		message: 'What would you like to buy?',
+		type:'list',
+		choices: ['Shoes','Shirts','Hats','Nothing']
+	}).then(function(k){
+		
+		if(k.choice === 'Nothing') {
+			console.log('Good Bye!');
+		} else {
+			shopItem();
+		}
+
+	})
+}
+
+function shopItem(Shoes,Shirts,Hats) {
+	this.Shoes = Shoes;
+	this.Shirts = Shirts;
+	this.Hats = Hats;
+}
+
+start();
+shopItem();
+
+
 
 /* First Challenged Finished */ 
 
