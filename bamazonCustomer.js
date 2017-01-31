@@ -29,32 +29,44 @@ connection.connect(function(err){
 	//start();
 })
 
+
+
+
 var start = function(){
+	connection.query('SELECT item_id, product_name, department_name, price, stock_quantity FROM products', function(err,res){
+		if(err) {
+			console.log('Display Error');
+		} else {
+			console.log('items for sale: ');
+			for(var i = 0; i < res.length; i++) {
+				console.log('#' + res[i].item_id + '\n Product: ' + res[i].product_name + '\n Price: $' + res[i].price + '\n Quantity in stock: ' + res[i].stock_quantity);
+			}
+		}
+	})
+}
+start();
+
+
+
+
+/* var start = function(){
 	inquirer.prompt({
 		name: 'choice',
 		message: 'What would you like to buy?',
 		type:'list',
-		choices: ['Shoes','Shirts','Hats','Nothing']
-	}).then(function(k){
-		
-		if(k.choice === 'Nothing') {
-			console.log('Good Bye!');
-		} else {
-			shopItem();
-		}
+		choices: ['Shoes','Shirts','Hats','Nothing'] */
 
-	})
-}
 
-function shopItem(Shoes,Shirts,Hats) {
+
+ /* function shopItem(Shoes,Shirts,Hats) {
 	this.Shoes = Shoes;
 	this.Shirts = Shirts;
 	this.Hats = Hats;
-}
+} 
 
 start();
 shopItem();
-
+*/
 
 
 /* First Challenged Finished */ 
