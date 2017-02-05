@@ -13,60 +13,119 @@ However, if your store does have enough of the product, you should fulfill the c
 This means updating the SQL database to reflect the remaining quantity.
 Once the update goes through, show the customer the total cost of their purchase. */
 
+//Required files to run program. 
 var inquirer = require('inquirer');
 var mysql = require('mysql');
 
+//Connection mySQL database
 var connection = mysql.createConnection({
 	host:"localhost",
 	port:3306,
 	user:"root",
 	password:"baseball07",
 	database:"Bamazon"
-})
+});
 
+//Show if connection is working. If not throw error.
 connection.connect(function(err){
 	console.log("Connected as id: " + connection.threadId);
-	//start();
-})
+	 searchDatabase();
+});
 
+// Pulls data from products data
+var searchDatabase = function() {
+        var query = 'SELECT * FROM products';
+        connection.query(query, function(err, res) {
+            console.log('\n');
+            for (var i = 0; i < res.length; i++) {
+                console.log("Item ID:  " + res[i].item_id + " || Product Name: " + res[i].product_name + " || Department: " + res[i].department_name + " || Price: " + res[i].price + " || Quanity: " + res[i].stock_quantity);
+            }
+        });
+        selectItem();
+};
 
+// Allows user to make a selection of the current inventory.
+var selectItem = function() {
+        
+    inquirer.prompt([{
+        name: 'id',
+        type: 'input',
+        message: 'Please Select ID of the item you would like to buy?',
+        validate: function(value) {
+            if (isNaN(value) == false) {
+                return true;
 
+            } else {
+                console.log('\nAdd a valid ID number.\n');
+                return false;
+            } 
+        } 
 
-var start = function(){
-	connection.query('SELECT item_id, product_name, department_name, price, stock_quantity FROM products', function(err,res){
-		if(err) {
-			console.log('Display Error');
-		} else {
-			console.log('items for sale: ');
-			for(var i = 0; i < res.length; i++) {
-				console.log('#' + res[i].item_id + '\n Product: ' + res[i].product_name + '\n Price: $' + res[i].price + '\n Quantity in stock: ' + res[i].stock_quantity);
-			}
-		}
-	})
+    	}, {
+
+        name: 'total',
+        type: 'input',
+        message: 'How many would you like to buy?',
+        validate: function(value) { 
+            if (isNaN(value) == false) {                
+                return true;
+            } else {        
+                console.log('\nPlease supply total\n');
+                return false;
+            } 
+        } 
+        
+    	}]).then(function(answer) {         
+            console.log(answer);
+            IntItem = parseInt(answer.total);
+            console.log(IntItem);
+            connection.query("SELECT * FROM products WHERE ?", [{item_id: answer.id}], function(err, data) { 
+                if (err) throw err;
+                if (data[0].stock_quantity < IntItem) {
+                console.log("Sorry, the quanity selected is currently not availible, please make another selection");
+                searchDatabase();
+                }   
+                else {
+                    //Setting a new quantity for the item
+                    var newQuantity = data[0].stock_quantity - IntItem;
+                    //Calculating the total price
+                    var totalPrice = data[0].price * IntItem;
+                    //Updating the table inventory
+                    connection.query('UPDATE products SET stock_quantity = ? WHERE item_id = ?', [newQuantity, answer.id], function(err, results) {
+                        if (err) throw err;
+                        else {
+                            console.log("Congrats on your purchase! Your total cost is $"+ totalPrice);
+                            purchaseMore();
+                        }
+                    });  
+                }
+            });
+        });
+      
+}; 
+
+//Asks if the user would like to make another purchase
+var purchaseMore = function() {
+    inquirer.prompt({
+        type: "confirm",
+        message: "Would you like to make another purchase?",
+        name: "confirm",
+        default: true
+    
+        }).then(function(answer) {
+            if (answer.confirm)
+            {
+                searchDatabase();
+            }
+            else {
+                console.log("Please come back again!")
+            }
+        });  
 }
-start();
 
 
 
-
-/* var start = function(){
-	inquirer.prompt({
-		name: 'choice',
-		message: 'What would you like to buy?',
-		type:'list',
-		choices: ['Shoes','Shirts','Hats','Nothing'] */
-
-
-
- /* function shopItem(Shoes,Shirts,Hats) {
-	this.Shoes = Shoes;
-	this.Shirts = Shirts;
-	this.Hats = Hats;
-} 
-
-start();
-shopItem();
-*/
+//Grabs the data from mySQL.
 
 
 /* First Challenged Finished */ 
